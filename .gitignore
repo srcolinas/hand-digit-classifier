@@ -7,3 +7,5 @@ venv
 sign_digits
 image_files
 Sign*
+
+train.py
