@@ -1,3 +1,9 @@
+"""Model architectures.
+
+All models defined in this module expect an image and output unnormalized
+logits of shape [N, num_labels].
+
+"""
 import tensorflow as tf
 
 from tensorflow.keras import Model
@@ -9,11 +15,13 @@ class Baseline(Model):
         self.flatten = layers.Flatten()
         self.dense1 = layers.Dense(100, activation='sigmoid')
         self.dense2 = layers.Dense(num_labels)
+        self.sofmax = layers.Softmax()
 
     def call(self, x):
         x = self.flatten(x)
         x = self.dense1(x)
-        return self.dense2(x)
+        x = self.dense2(x)
+        return self.sofmax(x) 
         
 
 class BasicCNN(Model):
