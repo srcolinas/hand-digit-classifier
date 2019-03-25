@@ -3,6 +3,7 @@ __pycache__
 venv
 *.ipynb_checkpoints
 
+checkpoints
 
 sign_digits
 image_files

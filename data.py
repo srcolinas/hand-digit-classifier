@@ -105,9 +105,8 @@ def make_dataset(sources, training=False, batch_size=1,
             from which the new dataset will sample.
 
     Returns:
-        A tf.Tensor which moves over the dataset every time it is executed
-            (i.e. tf.data.Iterator().get_next()). It will return a tuple
-            of labels [N, 1] and images [N, H, W, CH].
+        A tf.data.Dataset object. It will return a tuple images of shape
+        [N, H, W, CH] and labels shape [N, 1].
     """
     def load_and_preprocess_images(row):
         filepath = row['image']

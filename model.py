@@ -13,7 +13,7 @@ class Baseline(Model):
     def __init__(self, num_labels):
         super(Baseline, self).__init__()
         self.flatten = layers.Flatten()
-        self.dense1 = layers.Dense(100, activation='sigmoid')
+        self.dense1 = layers.Dense(100, activation='elu')
         self.dense2 = layers.Dense(num_labels)
         self.sofmax = layers.Softmax()
 
