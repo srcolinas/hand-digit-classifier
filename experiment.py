@@ -8,6 +8,7 @@ However, the changes are expected to be minimal.
 """
 import argparse
 import os
+import shutil
 
 import pandas as pd
 import tensorflow as tf
@@ -38,6 +39,9 @@ def main(args):
 
     # TODO: instantiate the model of your choice
     net = model.Baseline(num_labels=num_labels)
+    if not args.cold_start:
+        latest = tf.train.latest_checkpoint(args.checkpoint_dir)
+        net.load_weights(latest)
     #
 
     # TODO: define loss function
@@ -48,16 +52,24 @@ def main(args):
     optimizer = tf.optimizers.Adam(learning_rate=args.learning_rate)
     #
 
+    # Compile the model
+    net.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+    #
+
+    # TODO: define callbacks
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
-        os.path.join(args.checkpoint_dir, 'tf_ckpt'), 
-        save_weights_only=True, verbose=1)
+        os.path.join(args.checkpoint_dir, 'weights.{epoch:02d}-{val_loss:.2f}.ckpt'), 
+        save_best_only=True, save_weights_only=True, verbose=1)
     tb_callback = tf.keras.callbacks.TensorBoard(
         os.path.join(args.checkpoint_dir, 'logs'), profile_batch=0)
-    net.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+    callbacks = [cp_callback, tb_callback]
+    #
+
+    # Train your model
     net.fit(x=train_dataset, epochs=args.num_epochs,
         validation_data=valid_dataset, validation_steps=args.validation_steps,
-        callbacks=[cp_callback, tb_callback])
-
+        callbacks=callbacks)
+    #
 
 
 if __name__ == "__main__":
@@ -66,12 +78,17 @@ if __name__ == "__main__":
     parser.add_argument('--checkpoint-dir', default='checkpoints')
     parser.add_argument('--data-dir', default='image_files')
     parser.add_argument('--exclude-labels', default='6|7|8|9')
-    parser.add_argument('--num_epochs', default=1000, type=int)
+    parser.add_argument('--num-epochs', default=10, type=int)
     parser.add_argument('--batch-size', default=256, type=int)
     parser.add_argument('--learning-rate', default=0.0001, type=float)
     parser.add_argument('--validation-steps', default=1, type=int)
+    parser.add_argument('--cold-start', action='store_true')
 
     args = parser.parse_args()
     print(args)
+
+    if args.cold_start:
+        if os.path.isdir(args.checkpoint_dir):
+            shutil.rmtree(args.checkpoint_dir)
 
     main(args)
