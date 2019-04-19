@@ -7,6 +7,7 @@ However, the changes are expected to be minimal.
 
 """
 import argparse
+import datetime
 import os
 import shutil
 
@@ -57,11 +58,14 @@ def main(args):
     #
 
     # TODO: define callbacks
+    checkpoint_path = os.path.join(args.checkpoint_dir, 'weights.{epoch:02d}-{val_loss:.2f}.ckpt')
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
-        os.path.join(args.checkpoint_dir, 'weights.{epoch:02d}-{val_loss:.2f}.ckpt'), 
-        save_best_only=True, save_weights_only=True, verbose=1)
-    tb_callback = tf.keras.callbacks.TensorBoard(
-        os.path.join(args.checkpoint_dir, 'logs'), profile_batch=0)
+        checkpoint_path, save_best_only=True, save_weights_only=True, verbose=1)
+
+    time = datetime.datetime.now()
+    logs_path = f'logs_{time.year}_{time.month}_{time.day}_{time.hour}_{time.minute}'
+    logs_path = os.path.join(args.checkpoint_dir, logs_path)
+    tb_callback = tf.keras.callbacks.TensorBoard(logs_path, profile_batch=0)
     callbacks = [cp_callback, tb_callback]
     #
 
@@ -83,6 +87,7 @@ if __name__ == "__main__":
     parser.add_argument('--learning-rate', default=0.0001, type=float)
     parser.add_argument('--validation-steps', default=1, type=int)
     parser.add_argument('--cold-start', action='store_true')
+    parser.add_argument('--delete-all-logs', action='store_true')
 
     args = parser.parse_args()
     print(args)
@@ -90,5 +95,10 @@ if __name__ == "__main__":
     if args.cold_start:
         if os.path.isdir(args.checkpoint_dir):
             shutil.rmtree(args.checkpoint_dir)
+    if args.delete_all_logs:
+        if os.path.isdir(args.checkpoint_dir):
+            for dir_ in os.listdir(args.checkpoint_dir):
+                if dir_.startswith('logs'):
+                    shutil.rmtree(os.path.join(args.checkpoint_dir, dir_))
 
     main(args)
