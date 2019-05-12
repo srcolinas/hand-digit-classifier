@@ -86,6 +86,10 @@ def find_sources(data_dir, exclude_dirs=None, file_ext='.JPG', shuffle=True):
 
     return sources 
 
+def preprocess_image(image):
+    image = tf.image.resize(image, size=(32, 32))
+    image = image / 255.0
+    return image
 
 def make_dataset(sources, training=False, batch_size=1,
     num_epochs=1, num_parallel_calls=1, shuffle_buffer_size=None):
@@ -112,8 +116,7 @@ def make_dataset(sources, training=False, batch_size=1,
         filepath = row['image']
         img = tf.io.read_file(filepath)
         img = tf.io.decode_jpeg(img)
-        img = tf.image.resize(img, size=(32, 32))
-        img = img / 255.0
+        img = preprocess_image(img)
         return img, row['label']
 
     if shuffle_buffer_size is None:
