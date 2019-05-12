@@ -13,7 +13,6 @@ import random
 import shutil
 import sys
 
-import git
 import pandas as pd
 import tensorflow as tf
 
@@ -112,24 +111,24 @@ def make_dataset(sources, training=False, batch_size=1,
         A tf.data.Dataset object. It will return a tuple images of shape
         [N, H, W, CH] and labels shape [N, 1].
     """
-    def load_and_preprocess_images(row):
+    def load(row):
         filepath = row['image']
         img = tf.io.read_file(filepath)
         img = tf.io.decode_jpeg(img)
-        img = preprocess_image(img)
         return img, row['label']
 
     if shuffle_buffer_size is None:
         shuffle_buffer_size = batch_size*4
 
     images, labels = zip(*sources)
-
     ds = tf.data.Dataset.from_tensor_slices({
-        'image': list(images), 'label': list(labels)})   
+        'image': list(images), 'label': list(labels)}) 
+
     if training:
         ds = ds.shuffle(shuffle_buffer_size)
     
-    ds = ds.map(load_and_preprocess_images, num_parallel_calls=num_parallel_calls)
+    ds = ds.map(load, num_parallel_calls=num_parallel_calls)
+    ds = ds.map(preprocess_image)
     ds = ds.repeat(count=num_epochs)
     ds = ds.batch(batch_size=batch_size)
     ds = ds.prefetch(1)
@@ -143,6 +142,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.download:
+        import git
         git.Git('').clone('https://github.com/ardamavi/Sign-Language-Digits-Dataset.git')
 
     os.mkdir('images')
