@@ -84,6 +84,7 @@ def find_sources(data_dir, exclude_dirs=None, file_ext='.JPG', shuffle=True):
 
     random.shuffle(sources)
 
+    print(sources)
     return sources 
 
 def preprocess_image(image):
