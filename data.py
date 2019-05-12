@@ -26,8 +26,9 @@ def prepare_dataset(data_dir, exclude_dirs=None):
     metadata = pd.DataFrame({'label': labels, 'image_name': names, 'split': splits})
     metadata.to_csv('metadata.csv', index=False)
 
+    os.makedirs('image_files')
     for name, fpath in zip(names, filepaths):
-        shutil.copy(fpath, os.path.join('images', name))
+        shutil.copy(fpath, os.path.join('image_files', name))
 
 def build_sources_from_metadata(metadata, data_dir, mode='train', exclude_labels=None):
     
