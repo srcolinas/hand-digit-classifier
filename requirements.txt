@@ -1,1 +1,3 @@
 gitpython
+opencv-python
+pandas
